@@ -56,7 +56,7 @@ import edvironLogo from "../assets/images/edviron.png";
                         ].map((f, i) => (
                             <div
                                 key={i}
-                                className="p-8 bg-white rounded-2xl shadow-lg border hover:shadow-xl transition"
+                                className="p-8 bg-white rounded-2xl shadow-2xl border hover:shadow-xl transition"
                             >
                                 <div className="text-4xl mb-4">{f.icon}</div>
                                 <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
@@ -96,7 +96,7 @@ import edvironLogo from "../assets/images/edviron.png";
                 </section>
 
                 {/* CTA */}
-                <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
+                <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16 rounded-3xl">
                     <div className="max-w-5xl mx-auto text-center">
                         <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Institution?</h2>
                         <p className="mb-8 text-lg">
@@ -109,7 +109,7 @@ import edvironLogo from "../assets/images/edviron.png";
                 </section>
 
                 {/* Footer */}
-                <footer className="bg-gray-900 text-gray-400 py-8">
+                <footer className="bg-gray-900 text-gray-400 py-8 rounded-3xl">
                     <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
                         <p>© {new Date().getFullYear()} Edviron. All rights reserved.</p>
                         <div className="flex gap-4 mt-4 md:mt-0">

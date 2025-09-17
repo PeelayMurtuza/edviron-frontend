@@ -1,12 +1,57 @@
-# React + Vite
+# Edviron Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the **frontend** of the Edviron project, a modern educational payment and transaction management platform. It is built with **ReactJS** and **Vite** for fast development with Hot Module Replacement (HMR) and ESLint integration.  
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Table of Contents
 
-## Expanding the ESLint configuration
+- [Project Overview](#project-overview)  
+- [Screenshots](#screenshots)  
+- [Installation](#installation)  
+- [Usage](#usage)  
+- [Folder Structure](#folder-structure)  
+- [React + Vite](#react--vite)  
+- [Technologies Used](#technologies-used)  
+- [Contributing](#contributing)  
+- [License](#license)  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Project Overview
+
+Edviron Frontend provides a responsive interface for managing educational payments, viewing transaction details, and generating reports. It includes features like:
+
+- Dashboard with transaction overview  
+- Payment form integration  
+- Filtering and pagination for transactions  
+- Detailed transaction views  
+
+---
+
+## Screenshots
+
+### Home Page
+![Home 1](src/assets/images/home_1.png)  
+![Home 2](src/assets/images/home_2.png)  
+![Home 3](src/assets/images/home_3.png)  
+
+### Payments
+![Payment 1](src/assets/images/payment_1.png)  
+
+### Transactions
+![Transaction Details](src/assets/images/transaction_details.png)  
+![Transaction with Filter](src/assets/images/transaction_with_filter.png)  
+![Transaction with Pagination](src/assets/images/transaction_with_pagination.png)  
+
+### Logo
+![Edviron Logo](src/assets/images/edviron.png)  
+
+---
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/edviron-frontend.git
