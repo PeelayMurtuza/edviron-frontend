@@ -20,7 +20,7 @@ export default function PaymentForm() {
         trustee_id: "trustee123",
         student_info: {
           name: studentName,
-          id: `student_${Date.now()}`, // unique ID
+          id: `student_${Date.now()}`, 
           email: studentEmail,
         },
         gateway_name: "edviron",
@@ -41,7 +41,7 @@ export default function PaymentForm() {
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow-md mt-6">
       <h2 className="text-xl font-semibold mb-4">Create Payment</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
+        Student Name<input
           type="text"
           placeholder="Student Name"
           value={studentName}
@@ -49,7 +49,8 @@ export default function PaymentForm() {
           className="border p-2 rounded"
           required
         />
-        <input
+         
+         Student Email<input
           type="email"
           placeholder="Student Email"
           value={studentEmail}
@@ -57,7 +58,7 @@ export default function PaymentForm() {
           className="border p-2 rounded"
           required
         />
-        <input
+        Amount<input
           type="number"
           placeholder="Amount"
           value={amount}

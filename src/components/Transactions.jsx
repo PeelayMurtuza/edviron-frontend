@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api/payments";
 
 export default function Transactions() {
-  // State
   const [transactions, setTransactions] = useState([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const limit = 10;
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -19,31 +18,26 @@ export default function Transactions() {
   const [dateTo, setDateTo] = useState("");
   const [selected, setSelected] = useState(null);
 
-  // Debounced search
-  const [debouncedSearch, setDebouncedSearch] = useState(search);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 400);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  // Fetch transactions
   const fetchTransactions = async () => {
     setLoading(true);
     setError("");
     try {
-      const params = { page, limit };
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (statusFilter) params.status = statusFilter;
-      if (dateFrom) params.dateFrom = dateFrom;
-      if (dateTo) params.dateTo = dateTo;
+      const res = await axios.get(`${API_URL}/transactions`, {
+        params: {
+          page,
+          limit,
+          search: search.trim(),
+          status: statusFilter,
+          dateFrom,
+          dateTo,
+        },
+      });
 
-      const res = await axios.get(`${API_URL}/transactions`, { params });
-      const data = Array.isArray(res.data.data) ? res.data.data : [];
+      const { data = [], total = 0, totalPages = 1 } = res.data;
+
       setTransactions(data);
-
-      const serverTotal = res.data.total ?? data.length;
-      setTotal(serverTotal);
-      setTotalPages(res.data.totalPages ?? Math.max(1, Math.ceil(serverTotal / limit)));
+      setTotal(total);
+      setTotalPages(totalPages);
     } catch (err) {
       console.error(err);
       setError("⚠️ Failed to load transactions");
@@ -55,13 +49,11 @@ export default function Transactions() {
     }
   };
 
-  // Fetch on dependency changes
+  // Fetch data when page or filters change
   useEffect(() => {
     fetchTransactions();
-    // eslint-disable-next-line
-  }, [page, limit, debouncedSearch, statusFilter, dateFrom, dateTo]);
+  }, [page, search, statusFilter, dateFrom, dateTo]);
 
-  // Formatters
   const fmtDate = (d) => (d ? new Date(d).toLocaleString("en-IN") : "-");
   const fmtAmt = (n) => (n == null ? "-" : `₹${Number(n).toLocaleString("en-IN")}`);
 
@@ -73,7 +65,6 @@ export default function Transactions() {
     return <span className={`${base} bg-gray-50 text-gray-800`}>{s || "-"}</span>;
   };
 
-  // Copy text helper
   const copy = (text) => {
     navigator.clipboard.writeText(text);
     const el = document.createElement("div");
@@ -83,7 +74,8 @@ export default function Transactions() {
     setTimeout(() => document.body.removeChild(el), 900);
   };
 
-  const rows = useMemo(() => transactions, [transactions]);
+  const handlePrev = () => setPage((p) => Math.max(p - 1, 1));
+  const handleNext = () => setPage((p) => Math.min(p + 1, totalPages));
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -102,41 +94,28 @@ export default function Transactions() {
             className="border border-gray-200 rounded px-3 py-2 w-60 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             placeholder="Search (Order ID / custom_order_id)"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => setSearch(e.target.value)}
           />
           <select
             className="border border-gray-200 rounded px-3 py-2"
             value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="">All status</option>
             <option value="SUCCESS">Success</option>
             <option value="PENDING">Pending</option>
             <option value="FAILED">Failed</option>
           </select>
-          <input
-            type="date"
-            className="border border-gray-200 rounded px-3 py-2"
-            value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-          />
-          <input
-            type="date"
-            className="border border-gray-200 rounded px-3 py-2"
-            value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-          />
-          <select
-            value={limit}
-            onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-            className="border border-gray-200 rounded px-3 py-2 ml-auto"
-          >
-            <option value={10}>10 / page</option>
-            <option value={25}>25 / page</option>
-            <option value={50}>50 / page</option>
-          </select>
+          <input type="date" className="border border-gray-200 rounded px-3 py-2" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <input type="date" className="border border-gray-200 rounded px-3 py-2" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           <button
-            onClick={() => { setSearch(""); setStatusFilter(""); setDateFrom(""); setDateTo(""); setPage(1); }}
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("");
+              setDateFrom("");
+              setDateTo("");
+              setPage(1);
+            }}
             className="px-3 py-2 border border-gray-200 rounded text-sm bg-white hover:bg-gray-50"
           >
             Reset
@@ -144,53 +123,42 @@ export default function Transactions() {
         </div>
 
         {/* Table */}
-        <div className="bg-white mt-6 rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead className="bg-gray-50">
-                <tr>
-                  {["#", "Order ID", "School", "Order Amt", "Txn Amt", "Method", "Status", "Time", "Actions"].map((h, i) => (
-                    <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r border-gray-200">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="9" className="p-6 text-center text-gray-500">Loading transactions…</td>
+        <div className="bg-white mt-6 rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+          <table className="min-w-full table-auto">
+            <thead className="bg-gray-50">
+              <tr>
+                {["#", "Order ID", "School", "Order Amt", "Txn Amt", "Method", "Status", "Time", "Actions"].map((h, i) => (
+                  <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r border-gray-200">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="9" className="p-6 text-center text-gray-500">Loading transactions…</td></tr>
+              ) : error ? (
+                <tr><td colSpan="9" className="p-6 text-center text-red-500">{error}</td></tr>
+              ) : transactions.length === 0 ? (
+                <tr><td colSpan="9" className="p-6 text-center text-gray-500">No transactions found</td></tr>
+              ) : (
+                transactions.map((r, idx) => (
+                  <tr key={r.collect_id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
+                    <td className="px-4 py-3 text-sm text-gray-800 border-r border-gray-100">{(page - 1) * limit + idx + 1}</td>
+                    <td className="px-4 py-3 text-sm font-mono text-black border-r border-gray-100">{r.collect_id}</td>
+                    <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{r.school_id}</td>
+                    <td className="px-4 py-3 text-sm text-right text-black border-r border-gray-100">{fmtAmt(r.order_amount)}</td>
+                    <td className="px-4 py-3 text-sm text-right text-black border-r border-gray-100">{fmtAmt(r.transaction_amount)}</td>
+                    <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{r.gateway}</td>
+                    <td className="px-4 py-3 text-sm border-r border-gray-100">{statusBadge(r.status)}</td>
+                    <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{fmtDate(r.payment_time)}</td>
+                    <td className="px-4 py-3 text-sm text-black flex gap-2">
+                      <button onClick={() => copy(r.collect_id)} className="text-indigo-600 hover:underline">Copy</button>
+                      <button onClick={() => setSelected(r)} className="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50">Details</button>
+                    </td>
                   </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan="9" className="p-6 text-center text-red-500">{error}</td>
-                  </tr>
-                ) : rows.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="p-6 text-center text-gray-500">No transactions found</td>
-                  </tr>
-                ) : (
-                  rows.map((r, idx) => (
-                    <tr
-                      key={r.collect_id}
-                      className="odd:bg-white even:bg-gray-50 hover:bg-gray-100 transform-gpu transition duration-150 ease-in-out hover:scale-[1.01]"
-                    >
-                      <td className="px-4 py-3 text-sm text-gray-800 border-r border-gray-100">{(page - 1) * limit + idx + 1}</td>
-                      <td className="px-4 py-3 text-sm font-mono text-black border-r border-gray-100 break-words max-w-xs">{r.collect_id}</td>
-                      <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{r.school_id}</td>
-                      <td className="px-4 py-3 text-sm text-right text-black border-r border-gray-100">{fmtAmt(r.order_amount)}</td>
-                      <td className="px-4 py-3 text-sm text-right text-black border-r border-gray-100">{fmtAmt(r.transaction_amount)}</td>
-                      <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{r.gateway}</td>
-                      <td className="px-4 py-3 text-sm border-r border-gray-100">{statusBadge(r.status)}</td>
-                      <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{fmtDate(r.payment_time)}</td>
-                      <td className="px-4 py-3 text-sm text-black flex gap-2">
-                        <button onClick={() => copy(r.collect_id)} className="text-indigo-600 hover:underline">Copy</button>
-                        <button onClick={() => setSelected(r)} className="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50">Details</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* Pagination */}
@@ -199,9 +167,9 @@ export default function Transactions() {
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 disabled:opacity-50">Prev</button>
+            <button onClick={handlePrev} disabled={page <= 1} className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 disabled:opacity-50">Prev</button>
             <div className="px-3 py-1 border border-gray-200 rounded bg-white text-sm">{page} / {totalPages}</div>
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
+            <button onClick={handleNext} disabled={page >= totalPages} className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
           </div>
         </div>
 
@@ -228,7 +196,6 @@ export default function Transactions() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
