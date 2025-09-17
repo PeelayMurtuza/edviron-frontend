@@ -40,9 +40,9 @@ Edviron Frontend provides a responsive interface for managing educational paymen
 ![Payment 1](src/assets/images/payment_1.png)  
 
 ### Transactions
-![Transaction Details](src/assets/images/transaction_details.png)  
-![Transaction with Filter](src/assets/images/transaction_with_filter.png)  
 ![Transaction with Pagination](src/assets/images/transaction_with_pagination.png)  
+![Transaction with Filter](src/assets/images/transaction_with_filter.png)  
+![Transaction Details](src/assets/images/transaction_details.png)  
 
 ### Logo
 ![Edviron Logo](src/assets/images/edviron.png)  
