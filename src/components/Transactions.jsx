@@ -22,18 +22,14 @@ export default function Transactions() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get(`${API_URL}/transactions`, {
-        params: {
-          page,
-          limit,
-          search: search.trim(),
-          status: statusFilter,
-          dateFrom,
-          dateTo,
-        },
-      });
+      const params = { page, limit };
+      if (search.trim()) params.search = search.trim();
+      if (statusFilter) params.status = statusFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
 
-      const { data = [], total = 0, totalPages = 1 } = res.data;
+      const res = await axios.get(`${API_URL}/transactions`, { params });
+      const { data = [], total = 0, totalPages = 1 } = res.data || {};
 
       setTransactions(data);
       setTotal(total);
@@ -49,9 +45,9 @@ export default function Transactions() {
     }
   };
 
-  // Fetch data when page or filters change
   useEffect(() => {
     fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, statusFilter, dateFrom, dateTo]);
 
   const fmtDate = (d) => (d ? new Date(d).toLocaleString("en-IN") : "-");
@@ -92,10 +88,11 @@ export default function Transactions() {
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-3 items-center">
           <input
             className="border border-gray-200 rounded px-3 py-2 w-60 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            placeholder="Search (Order ID / custom_order_id)"
+            placeholder="Search by Order ID or custom_order_id"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
           <select
             className="border border-gray-200 rounded px-3 py-2"
             value={statusFilter}
@@ -106,8 +103,20 @@ export default function Transactions() {
             <option value="PENDING">Pending</option>
             <option value="FAILED">Failed</option>
           </select>
-          <input type="date" className="border border-gray-200 rounded px-3 py-2" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-          <input type="date" className="border border-gray-200 rounded px-3 py-2" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+
+          <input
+            type="date"
+            className="border border-gray-200 rounded px-3 py-2"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+          <input
+            type="date"
+            className="border border-gray-200 rounded px-3 py-2"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
+
           <button
             onClick={() => {
               setSearch("");
@@ -116,7 +125,7 @@ export default function Transactions() {
               setDateTo("");
               setPage(1);
             }}
-            className="px-3 py-2 border border-gray-200 rounded text-sm bg-white hover:bg-gray-50"
+            className="px-3 py-2 rounded text-sm bg-white border border-gray-200 hover:bg-gray-50"
           >
             Reset
           </button>
@@ -127,9 +136,15 @@ export default function Transactions() {
           <table className="min-w-full table-auto">
             <thead className="bg-gray-50">
               <tr>
-                {["#", "Order ID", "School", "Order Amt", "Txn Amt", "Method", "Status", "Time", "Actions"].map((h, i) => (
-                  <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r border-gray-200">{h}</th>
-                ))}
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">#</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">Order ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">School</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">Order Amt</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">Txn Amt</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">Method</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 border-r">Time</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -141,18 +156,18 @@ export default function Transactions() {
                 <tr><td colSpan="9" className="p-6 text-center text-gray-500">No transactions found</td></tr>
               ) : (
                 transactions.map((r, idx) => (
-                  <tr key={r.collect_id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
-                    <td className="px-4 py-3 text-sm text-gray-800 border-r border-gray-100">{(page - 1) * limit + idx + 1}</td>
-                    <td className="px-4 py-3 text-sm font-mono text-black border-r border-gray-100">{r.collect_id}</td>
-                    <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{r.school_id}</td>
-                    <td className="px-4 py-3 text-sm text-right text-black border-r border-gray-100">{fmtAmt(r.order_amount)}</td>
-                    <td className="px-4 py-3 text-sm text-right text-black border-r border-gray-100">{fmtAmt(r.transaction_amount)}</td>
-                    <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{r.gateway}</td>
-                    <td className="px-4 py-3 text-sm border-r border-gray-100">{statusBadge(r.status)}</td>
-                    <td className="px-4 py-3 text-sm text-black border-r border-gray-100">{fmtDate(r.payment_time)}</td>
-                    <td className="px-4 py-3 text-sm text-black flex gap-2">
+                  <tr key={r.collect_id || idx} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
+                    <td className="px-4 py-3 text-sm">{(page - 1) * limit + idx + 1}</td>
+                    <td className="px-4 py-3 text-sm font-mono">{r.collect_id}</td>
+                    <td className="px-4 py-3 text-sm">{r.school_id}</td>
+                    <td className="px-4 py-3 text-sm text-right">{fmtAmt(r.order_amount)}</td>
+                    <td className="px-4 py-3 text-sm text-right">{fmtAmt(r.transaction_amount)}</td>
+                    <td className="px-4 py-3 text-sm">{r.gateway}</td>
+                    <td className="px-4 py-3 text-sm">{statusBadge(r.status)}</td>
+                    <td className="px-4 py-3 text-sm">{fmtDate(r.payment_time)}</td>
+                    <td className="px-4 py-3 text-sm flex gap-2">
                       <button onClick={() => copy(r.collect_id)} className="text-indigo-600 hover:underline">Copy</button>
-                      <button onClick={() => setSelected(r)} className="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50">Details</button>
+                      <button onClick={() => setSelected(r)} className="px-2 py-1 border rounded hover:bg-gray-50">Details</button>
                     </td>
                   </tr>
                 ))
@@ -167,22 +182,22 @@ export default function Transactions() {
             Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={handlePrev} disabled={page <= 1} className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 disabled:opacity-50">Prev</button>
-            <div className="px-3 py-1 border border-gray-200 rounded bg-white text-sm">{page} / {totalPages}</div>
-            <button onClick={handleNext} disabled={page >= totalPages} className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
+            <button onClick={handlePrev} disabled={page <= 1} className="px-3 py-1 border rounded bg-white disabled:opacity-50">Prev</button>
+            <div className="px-3 py-1 border rounded bg-white text-sm">{page} / {totalPages}</div>
+            <button onClick={handleNext} disabled={page >= totalPages} className="px-3 py-1 border rounded bg-white disabled:opacity-50">Next</button>
           </div>
         </div>
 
         {/* Modal */}
         {selected && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg w-11/12 md:w-2/3 lg:w-1/2 p-6 shadow-xl border border-gray-200">
+            <div className="bg-white rounded-lg w-11/12 md:w-2/3 lg:w-1/2 p-6 shadow-xl border">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Transaction Details</h3>
+                <h3 className="text-lg font-semibold">Transaction Details</h3>
                 <button onClick={() => setSelected(null)} className="text-gray-500 hover:text-black">✕</button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-800">
-                <div><strong>Order ID</strong><div className="mt-1 text-gray-900 break-words">{selected.collect_id}</div></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div><strong>Order ID</strong><div className="mt-1">{selected.collect_id}</div></div>
                 <div><strong>School</strong><div className="mt-1">{selected.school_id}</div></div>
                 <div><strong>Order Amount</strong><div className="mt-1">{fmtAmt(selected.order_amount)}</div></div>
                 <div><strong>Txn Amount</strong><div className="mt-1">{fmtAmt(selected.transaction_amount)}</div></div>
