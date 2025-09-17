@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import PaymentForm from "./components/PaymentForm";
 import Transactions from "./components/Transactions";
+import './App.css'; 
 
 function App() {
   return (

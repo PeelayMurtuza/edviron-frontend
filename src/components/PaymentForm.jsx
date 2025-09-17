@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/payments/create-payment"; 
+const API_URL = "http://localhost:5000/api/payments/create-payment";
 
 export default function PaymentForm() {
   const [studentName, setStudentName] = useState("");
@@ -20,7 +20,7 @@ export default function PaymentForm() {
         trustee_id: "trustee123",
         student_info: {
           name: studentName,
-          id: "student123",
+          id: `student_${Date.now()}`, // unique ID
           email: studentEmail,
         },
         gateway_name: "edviron",
@@ -30,7 +30,7 @@ export default function PaymentForm() {
 
       setPaymentLink(res.data.payment_url);
     } catch (err) {
-      console.error(err);
+      console.error("Payment create error:", err);
       setError(err.response?.data?.error || "Payment creation failed");
     } finally {
       setLoading(false);
