@@ -43,9 +43,7 @@ Edviron Frontend provides a responsive interface for managing educational paymen
 ![Transaction with Pagination](src/assets/images/transaction_with_pagination.png)  
 ![Transaction with Filter](src/assets/images/transaction_with_filter.png)  
 ![Transaction Details](src/assets/images/transaction_details.png)  
-
-### Logo
-![Edviron Logo](src/assets/images/edviron.png)  
+ 
 
 ---
 
@@ -55,3 +53,16 @@ Edviron Frontend provides a responsive interface for managing educational paymen
 
 ```bash
 git clone https://github.com/yourusername/edviron-frontend.git
+
+- Change Directory
+
+cd edviron-frontend
+
+- install all node modules 
+npm install
+
+- To start
+npm run dev
+
+
+
